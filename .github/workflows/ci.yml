@@ -11,6 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - name: Write Keystore
+        run: echo "${{ secrets.KEYSTORE }}" | base64 --decode > /tmp/keystore
+      - name: Write Key properties
+        run: |
+          touch android/key.properties
+          echo "storePassword=${{ secrets.KEYSTORE_PASS }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.KEYSTORE_PASS }}" >> android/key.properties
+          echo "keyAlias=key" >> android/key.properties
+          echo "storeFile=/tmp/keystore" >> android/key.properties
+
       - uses: actions/setup-java@v1
         with:
           java-version: '12.x'
