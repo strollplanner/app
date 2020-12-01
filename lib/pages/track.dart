@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:background_location/background_location.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -133,22 +134,24 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
                 // center the children vertically; the main axis here is the vertical
                 // axis because Columns are vertical (the cross axis would be
                 // horizontal).
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
-                  Text(
-                    'Last position:',
+                  Column(
+                    children: [
+                      Text(
+                        'Last position:',
+                      ),
+                      Text(
+                        _location == null
+                            ? 'N/A'
+                            : '${_location.latitude} ${_location.longitude}',
+                        style: Theme.of(context).textTheme.headline4,
+                      ),
+                    ]
                   ),
-                  Text(
-                    _running ? 'Tracker running' : 'Tracker paused',
-                  ),
-                  Text(
-                    _location == null
-                        ? 'N/A'
-                        : '${_location.latitude} ${_location.longitude}',
-                    style: Theme.of(context).textTheme.headline4,
-                  ),
-                  ElevatedButton(
+                  RaisedButton(
                       onPressed: this.toggleTracker,
+                      color: _running ? Colors.red : Colors.green,
                       child: Text(_running ? 'Stop' : 'Start'))
                 ],
               )

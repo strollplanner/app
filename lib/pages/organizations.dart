@@ -31,7 +31,9 @@ class Organization {
 List<Organization> organizationsFromJson(Map<String, dynamic> json) {
   List<dynamic> memberships = json["viewer"]["memberships"];
 
-  return memberships.map((e) => Organization.fromJson(e["organization"])).toList();
+  return memberships
+      .map((e) => Organization.fromJson(e["organization"]))
+      .toList();
 }
 
 class _OrganizationsPageState extends State<OrganizationsPage> {
@@ -42,6 +44,16 @@ class _OrganizationsPageState extends State<OrganizationsPage> {
     return Scaffold(
         appBar: AppBar(
           title: Text("Organizations"),
+          actions: <Widget>[
+            FlatButton(
+              textColor: Colors.white,
+              onPressed: () {
+                Provider.of<AuthService>(context, listen: false).logout();
+              },
+              child: Text("Logout"),
+              shape: CircleBorder(side: BorderSide(color: Colors.transparent)),
+            ),
+          ],
         ),
         body: organizations == null
             ? CircularProgressIndicator()

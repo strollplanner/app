@@ -33,7 +33,10 @@ class _RootPageState extends State<RootPage> {
           if (snapshot.connectionState == ConnectionState.done) {
             return snapshot.hasData ? OrganizationsPage() : LoginPage();
           } else {
-            return Container(color: Colors.red);
+            return Material(
+                child: Column(
+              children: [CircularProgressIndicator()],
+            ));
           }
         },
       ),
