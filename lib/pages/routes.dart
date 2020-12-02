@@ -102,6 +102,8 @@ class _RoutesPageState extends State<RoutesPage> {
   @override
   void initState() {
     super.initState();
-    fetchRoutes();
+    Future.delayed(Duration.zero, () {
+      fetchRoutes();
+    });
   }
 }

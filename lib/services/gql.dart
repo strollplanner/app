@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:strollplanner_tracker/constants.dart';
+import 'package:strollplanner_tracker/config.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
 
 typedef DataFactory<D> = D Function(Map<String, dynamic>);
@@ -35,7 +35,7 @@ Future<Response<D>> request<D>(
   }
 
   final res = await http.post(
-    '$API_BASE_URL/graphql',
+    '${AppConfig.of(context).apiBaseApiUrl}/graphql',
     headers: headers,
     body: jsonEncode(<String, dynamic>{
       'query': query,

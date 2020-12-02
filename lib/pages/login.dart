@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:strollplanner_tracker/constants.dart' as Constants;
+import 'package:strollplanner_tracker/config.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatelessWidget {
@@ -12,7 +12,7 @@ class LoginPage extends StatelessWidget {
       children: [
         ElevatedButton(
           onPressed: () async {
-            const url = '${Constants.APP_BASE_URL}/magic-login';
+            var url = '${AppConfig.of(context).appBaseApiUrl}/magic-login';
             if (await canLaunch(url)) {
               await launch(
                 url,

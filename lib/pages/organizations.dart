@@ -58,6 +58,7 @@ class _OrganizationsPageState extends State<OrganizationsPage> {
                 itemBuilder: (context, index) {
                   var org = organizations[index];
                   return ListTile(
+                    leading: Image.network(org.logoUrl),
                     title: Text(org.name),
                     onTap: () {
                       Navigator.push(
@@ -107,8 +108,8 @@ class _OrganizationsPageState extends State<OrganizationsPage> {
   @override
   void initState() {
     super.initState();
-    // Future.delayed(Duration.zero,() {
-    fetchOrganizations();
-    // });
+    Future.delayed(Duration.zero, () {
+      fetchOrganizations();
+    });
   }
 }

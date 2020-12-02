@@ -4,9 +4,9 @@ import 'package:strollplanner_tracker/pages/root.dart';
 
 void main() {
   runApp(AppConfig(
-    flavorName: 'prod',
-    apiBaseApiUrl: 'https://api.stroll.pl',
-    appBaseApiUrl: 'https://app.stroll.pl',
+    flavorName: 'staging',
+    apiBaseApiUrl: 'https://api.stagingstrollpl.ovh',
+    appBaseApiUrl: 'https://app.stagingstrollpl.ovh',
     child: build(),
   ));
 }
