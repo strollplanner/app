@@ -16,7 +16,7 @@ class LoginPage extends StatelessWidget {
             if (await canLaunch(url)) {
               await launch(
                 url,
-                forceSafariVC: true,
+                forceSafariVC: false,
               );
             } else {
               throw 'Could not launch $url';

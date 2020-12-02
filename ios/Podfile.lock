@@ -1,0 +1,40 @@
+PODS:
+  - background_location (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - "permission_handler (5.0.1+1)":
+    - Flutter
+  - uni_links (0.0.1):
+    - Flutter
+  - url_launcher (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - background_location (from `.symlinks/plugins/background_location/ios`)
+  - Flutter (from `Flutter`)
+  - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
+  - uni_links (from `.symlinks/plugins/uni_links/ios`)
+  - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
+
+EXTERNAL SOURCES:
+  background_location:
+    :path: ".symlinks/plugins/background_location/ios"
+  Flutter:
+    :path: Flutter
+  permission_handler:
+    :path: ".symlinks/plugins/permission_handler/ios"
+  uni_links:
+    :path: ".symlinks/plugins/uni_links/ios"
+  url_launcher:
+    :path: ".symlinks/plugins/url_launcher/ios"
+
+SPEC CHECKSUMS:
+  background_location: 1b80c1fe3abd9912bca298618f6e365abf6f588f
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  permission_handler: eac8e15b4a1a3fba55b761d19f3f4e6b005d15b6
+  uni_links: d97da20c7701486ba192624d99bffaaffcfc298a
+  url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef
+
+PODFILE CHECKSUM: 875282a072ad94a6ca604890570b25e32ffbe18c
+
+COCOAPODS: 1.10.0

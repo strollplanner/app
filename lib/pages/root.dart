@@ -1,10 +1,8 @@
 import 'package:strollplanner_tracker/pages/organizations.dart';
-import 'package:strollplanner_tracker/pages/routes.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:strollplanner_tracker/pages/login.dart';
-import 'package:strollplanner_tracker/pages/track.dart';
 
 class RootPage extends StatefulWidget {
   @override

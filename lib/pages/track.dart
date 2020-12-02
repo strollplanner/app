@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:background_location/background_location.dart';
@@ -5,6 +7,69 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
 import 'package:strollplanner_tracker/services/gql.dart';
+
+class GrantPermission extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var helpText = Text(
+        'You must grant permission for the app to have access to the location:');
+
+    if (Platform.isAndroid) {
+      return Column(
+        children: [
+          helpText,
+          Text('Press Permissions > Location > Allow all the time'),
+          RaisedButton(
+            onPressed: openAppSettings,
+            child: Text('Open Settings'),
+          )
+        ],
+      );
+    } else if (Platform.isIOS) {
+      return FutureBuilder(
+          future: Permission.locationWhenInUse.isGranted,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              if (snapshot.data) {
+                return Column(
+                  children: [
+                    helpText,
+                    Text('Press Location > Always'),
+                    RaisedButton(
+                      onPressed: () async {
+                        openAppSettings();
+                      },
+                      child: Text('Grant always permission'),
+                    )
+                  ],
+                );
+              } else {
+                return Column(
+                  children: [
+                    helpText,
+                    Text('Select Allow While in use'),
+                    RaisedButton(
+                      onPressed: () async {
+                        await Permission.locationWhenInUse.request();
+                      },
+                      child: Text('Grant permission'),
+                    )
+                  ],
+                );
+              }
+            }
+
+            return CircularProgressIndicator();
+          });
+    } else {
+      return Column(
+        children: [
+          helpText,
+        ],
+      );
+    }
+  }
+}
 
 class TrackPage extends StatefulWidget {
   final String orgId;
@@ -80,7 +145,9 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 
   void logPosition(Location location) async {
     return;
-    var token = Provider.of<AuthService>(context, listen: false).token;
+    var token = Provider
+        .of<AuthService>(context, listen: false)
+        .token;
 
     await request(
         """
@@ -93,7 +160,7 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 			}
     """,
         token,
-        (_) => null,
+            (_) => null,
         variables: {
           "orgId": this.orgId,
           "id": this.routeId,
@@ -120,52 +187,43 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
         // in the middle of the parent.
         child: _permGranted
             ? Column(
-                // Column is also a layout widget. It takes a list of children and
-                // arranges them vertically. By default, it sizes itself to fit its
-                // children horizontally, and tries to be as tall as its parent.
-                //
-                // Invoke "debug painting" (press "p" in the console, choose the
-                // "Toggle Debug Paint" action from the Flutter Inspector in Android
-                // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-                // to see the wireframe for each widget.
-                //
-                // Column has various properties to control how it sizes itself and
-                // how it positions its children. Here we use mainAxisAlignment to
-                // center the children vertically; the main axis here is the vertical
-                // axis because Columns are vertical (the cross axis would be
-                // horizontal).
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Column(
-                    children: [
-                      Text(
-                        'Last position:',
-                      ),
-                      Text(
-                        _location == null
-                            ? 'N/A'
-                            : '${_location.latitude} ${_location.longitude}',
-                        style: Theme.of(context).textTheme.headline4,
-                      ),
-                    ]
-                  ),
-                  RaisedButton(
-                      onPressed: this.toggleTracker,
-                      color: _running ? Colors.red : Colors.green,
-                      child: Text(_running ? 'Stop' : 'Start'))
-                ],
-              )
-            : Column(
-                children: [
-                  Text(
-                      'You must grant permission for the app to have access to the location:'),
-                  Text('Press Permissions > Location > Allow all the time'),
-                  RaisedButton(
-                    onPressed: openAppSettings,
-                    child: Text('Open Settings'),
-                  )
-                ],
+          // Column is also a layout widget. It takes a list of children and
+          // arranges them vertically. By default, it sizes itself to fit its
+          // children horizontally, and tries to be as tall as its parent.
+          //
+          // Invoke "debug painting" (press "p" in the console, choose the
+          // "Toggle Debug Paint" action from the Flutter Inspector in Android
+          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+          // to see the wireframe for each widget.
+          //
+          // Column has various properties to control how it sizes itself and
+          // how it positions its children. Here we use mainAxisAlignment to
+          // center the children vertically; the main axis here is the vertical
+          // axis because Columns are vertical (the cross axis would be
+          // horizontal).
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            Column(children: [
+              Text(
+                'Last position:',
               ),
+              Text(
+                _location == null
+                    ? 'N/A'
+                    : '${_location.latitude} ${_location.longitude}',
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .headline4,
+              ),
+            ]),
+            RaisedButton(
+                onPressed: this.toggleTracker,
+                color: _running ? Colors.red : Colors.green,
+                child: Text(_running ? 'Stop' : 'Start'))
+          ],
+        )
+            : GrantPermission(),
       ),
     );
   }
