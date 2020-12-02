@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:strollplanner_tracker/pages/routes.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
 import 'package:strollplanner_tracker/services/gql.dart';
@@ -45,7 +44,7 @@ class _OrganizationsPageState extends State<OrganizationsPage> {
             FlatButton(
               textColor: Colors.white,
               onPressed: () {
-                Provider.of<AuthService>(context, listen: false).logout();
+                AuthService.of(context, listen: false).logout();
               },
               child: Text("Logout"),
               shape: CircleBorder(side: BorderSide(color: Colors.transparent)),
@@ -83,9 +82,9 @@ class _OrganizationsPageState extends State<OrganizationsPage> {
       this.organizations = null;
     });
 
-    var token = Provider.of<AuthService>(context, listen: false).token;
-
-    var res = await request("""
+    var res = await request(
+        context,
+        """
     query  {
       viewer {
         memberships {
@@ -97,7 +96,8 @@ class _OrganizationsPageState extends State<OrganizationsPage> {
         }
       }
     }
-    """, token, organizationsFromJson);
+    """,
+        organizationsFromJson);
 
     setState(() {
       this.organizations = res.data;

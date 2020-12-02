@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:strollplanner_tracker/pages/track.dart';
-import 'package:strollplanner_tracker/services/auth.dart';
 import 'package:strollplanner_tracker/services/gql.dart';
 
 class RoutesPage extends StatefulWidget {
@@ -77,9 +75,8 @@ class _RoutesPageState extends State<RoutesPage> {
       this.routes = null;
     });
 
-    var token = Provider.of<AuthService>(context, listen: false).token;
-
     var res = await request(
+        context,
         """
     query Organizations(\$orgId: ID!) {
       organization(id: \$orgId) {
@@ -94,7 +91,6 @@ class _RoutesPageState extends State<RoutesPage> {
       }
     }
     """,
-        token,
         routesFromJson,
         variables: {"orgId": this.orgId});
 

@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:strollplanner_tracker/constants.dart';
+import 'package:strollplanner_tracker/services/auth.dart';
 
 typedef DataFactory<D> = D Function(Map<String, dynamic>);
 
@@ -19,14 +21,22 @@ class Response<D> {
   }
 }
 
-Future<Response<D>> request<D>(String query, String token, DataFactory<D> df,
-    {Map<String, Object> variables}) async {
+Future<Response<D>> request<D>(
+    BuildContext context, String query, DataFactory<D> df,
+    {Map<String, Object> variables, String token}) async {
+  var headers = <String, String>{
+    'Content-Type': 'application/json',
+  };
+
+  var reqToken =
+      token != null ? token : AuthService.of(context, listen: false).token;
+  if (reqToken != null) {
+    headers['Authorization'] = 'Bearer $reqToken';
+  }
+
   final res = await http.post(
     '$API_BASE_URL/graphql',
-    headers: <String, String>{
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
+    headers: headers,
     body: jsonEncode(<String, dynamic>{
       'query': query,
       'variables': variables,

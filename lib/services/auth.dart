@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:strollplanner_tracker/pages/login.dart';
 import 'package:strollplanner_tracker/services/gql.dart';
 import 'package:uni_links/uni_links.dart';
 
@@ -33,13 +35,46 @@ class ViewerData {
   }
 }
 
+class AuthWidget extends StatelessWidget {
+  final Widget child;
+
+  AuthWidget(this.child);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      // get the Provider, and call the getUser method
+      future: AuthService.of(context).getUser(),
+      // wait for the future to resolve and render the appropriate
+      // widget for HomePage or LoginPage
+      builder: (context, AsyncSnapshot snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return snapshot.hasData ? child : LoginPage();
+        } else {
+          return Material(
+              child: Column(
+            children: [CircularProgressIndicator()],
+          ));
+        }
+      },
+    );
+  }
+}
+
 class AuthService with ChangeNotifier {
+  BuildContext context;
+
+  AuthService(this.context) {
+    initUriUniLinks();
+  }
+
   StreamSubscription _sub;
+
   User currentUser;
   var token;
 
-  AuthService() {
-    initUriUniLinks();
+  static AuthService of(BuildContext context, {bool listen = true}) {
+    return Provider.of<AuthService>(context, listen: listen);
   }
 
   Future getUser() {
@@ -53,26 +88,36 @@ class AuthService with ChangeNotifier {
     return Future.value(null);
   }
 
-  Future login({String token}) async {
-    var res = await request<ViewerData>("""
+  Future login(String token, User user) async {
+    this.token = token;
+    this.currentUser = user;
+    notifyListeners();
+    return Future.value(currentUser);
+  }
+
+  void loginRequest(String token) async {
+    var res = await request<ViewerData>(
+        context,
+        """
     query {
       viewer {
         id
         email
       }
-    }
-""", token, (m) => ViewerData.fromJson(m));
+    } 
+""",
+        (m) => ViewerData.fromJson(m),
+        token: token);
 
-    if (res.data.viewer == null) {
+    var viewer = res.data.viewer;
+
+    if (viewer == null) {
       print("viewer is null");
 
       return logout();
     }
 
-    this.token = token;
-    this.currentUser = res.data.viewer;
-    notifyListeners();
-    return Future.value(currentUser);
+    login(token, viewer);
   }
 
   @override
@@ -86,7 +131,7 @@ class AuthService with ChangeNotifier {
       case "login":
         var token = uri.queryParameters["token"];
 
-        login(token: token);
+        loginRequest(token);
         break;
       default:
         print("Unhandled uri: $uri");
@@ -99,7 +144,7 @@ class AuthService with ChangeNotifier {
     //   handleUri(uri);
     // }
 
-    getUriLinksStream().listen((Uri uri) {
+    _sub = getUriLinksStream().listen((Uri uri) {
       handleUri(uri);
     }, onError: (err) {
       print('uri err: $err');
