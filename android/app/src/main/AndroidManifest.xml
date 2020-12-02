@@ -16,7 +16,7 @@
 
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="strollplanner_tracker"
+        android:label="StrollPlanner Tracker"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
