@@ -1,5 +1,6 @@
 import 'package:provider/provider.dart';
 import 'package:strollplanner_tracker/pages/organizations.dart';
+import 'package:strollplanner_tracker/pages/upgrade.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
 import 'package:flutter/material.dart';
 
@@ -43,7 +44,7 @@ class RootPage extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: AuthWidget(OrganizationsPage()),
+      home: Material(child: UpgradePage.build(AuthWidget(OrganizationsPage()))),
     );
   }
 }

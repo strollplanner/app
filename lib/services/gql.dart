@@ -6,17 +6,34 @@ import 'package:strollplanner_tracker/services/auth.dart';
 
 typedef DataFactory<D> = D Function(Map<String, dynamic>);
 
+class Error {
+  final String message;
+
+  Error(this.message);
+
+  factory Error.fromJson(Map<String, dynamic> json) {
+    return Error(json["message"]);
+  }
+}
+
 class Response<D> {
   final D data;
-  final List<String> errors;
+  final List<Error> errors;
 
   Response({this.data, this.errors});
 
   factory Response.fromJson(
       Map<String, dynamic> json, DataFactory dataFactory) {
+    if (json['errors'] != null) {
+      List<dynamic> errors = json['errors'];
+
+      return Response(
+        errors: errors.map((e) => Error.fromJson(e)).toList(),
+      );
+    }
+
     return Response(
       data: dataFactory(json['data']),
-      errors: json['errors'],
     );
   }
 }
@@ -43,7 +60,7 @@ Future<Response<D>> request<D>(
     }),
   );
 
-  if (res.statusCode == 200) {
+  if (res.statusCode == 200 || res.statusCode == 422) {
     return Response.fromJson(jsonDecode(utf8.decode(res.bodyBytes)), df);
   } else {
     throw Exception('Request failed: ${res.statusCode}');

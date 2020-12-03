@@ -14,6 +14,8 @@
 
     <uses-feature android:name="android.permission.LOCATION_HARDWARE" />
 
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="StrollPlanner Tracker"

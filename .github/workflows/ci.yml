@@ -12,10 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Write Keystore
-        run: echo "${{ secrets.KEYSTORE }}" | base64 --decode > /tmp/keystore
-      - name: Write Key properties
+      - name: Get short SHA
+        id: slug
+        run: echo "::set-output name=sha8::$(git rev-parse --short HEAD)"
+
+      - name: Setup Keystore
         run: |
+          echo "${{ secrets.KEYSTORE }}" | base64 --decode > /tmp/keystore
           touch android/key.properties
           echo "storePassword=${{ secrets.KEYSTORE_PASS }}" >> android/key.properties
           echo "keyPassword=${{ secrets.KEYSTORE_PASS }}" >> android/key.properties
@@ -30,17 +33,13 @@ jobs:
           flutter-version: '1.22.4'
       - run: flutter pub get
 #      - run: flutter test # Nah
-      - run: flutter build apk  --build-number ${GITHUB_RUN_NUMBER}
+      - run: flutter build apk  --build-number ${GITHUB_RUN_NUMBER} --dart-define=RELEASE_TAG=${{steps.slug.outputs.sha8}}
       
       - name: Upload Artifacts
         uses: actions/upload-artifact@master
         with:
           name: android-app
           path: build/app/outputs/flutter-apk
-
-      - name: Get short SHA
-        id: slug
-        run: echo "::set-output name=sha8::$(git rev-parse --short HEAD)"
 
       - name: Create Release
         id: create_release
