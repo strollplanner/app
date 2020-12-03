@@ -1,10 +1,14 @@
 import 'dart:io';
+import 'dart:isolate';
+import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
+import 'package:background_locator/location_dto.dart';
+import 'package:background_locator/settings/android_settings.dart';
+import 'package:background_locator/settings/ios_settings.dart';
+import 'package:background_locator/settings/locator_settings.dart';
 import 'package:flutter/material.dart';
-import 'package:background_location/background_location.dart';
+import 'package:background_locator/background_locator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:provider/provider.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
 import 'package:strollplanner_tracker/services/gql.dart';
 
@@ -87,15 +91,30 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 
   _TrackPageState(this.orgId, this.routeId);
 
-  Location _location;
+  LocationDto _location;
   bool _running = false;
   bool _permGranted = false;
   bool postLocation = true;
   int count = 0;
 
+  static const String _isolateLocationName = "TrackLocation";
+  ReceivePort locationPort = ReceivePort();
+  static const String _isolateRunningName = "TrackRunning";
+  ReceivePort runningPort = ReceivePort();
+
   @override
   void initState() {
     super.initState();
+
+    IsolateNameServer.registerPortWithName(
+        locationPort.sendPort, _isolateLocationName);
+    locationPort.listen((d) => dataCallback(d));
+
+    IsolateNameServer.registerPortWithName(
+        runningPort.sendPort, _isolateRunningName);
+    runningPort.listen((d) => runningCallback(d));
+
+    BackgroundLocator.initialize();
 
     WidgetsBinding.instance.addObserver(this);
 
@@ -104,20 +123,58 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
     });
   }
 
+  void dataCallback(LocationDto location) async {
+    print(location);
+
+    setState(() {
+      _location = location;
+    });
+
+    logPosition(location);
+  }
+
+  void runningCallback(bool running) {
+    if (mounted) {
+      setState(() {
+        _running = running;
+      });
+    }
+  }
+
+  static void isolateCallback(LocationDto location) async {
+    print("location");
+    final SendPort send =
+        IsolateNameServer.lookupPortByName(_isolateLocationName);
+    send?.send(location);
+  }
+
+  static void isolateInitCallback(_) async {
+    print("init");
+    isolateRunning(true);
+  }
+
+  static void isolateDisposeCallback() async {
+    print("dispose");
+    isolateRunning(false);
+  }
+
+  static void isolateRunning(bool running) {
+    final SendPort send =
+    IsolateNameServer.lookupPortByName(_isolateRunningName);
+    send?.send(running);
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    IsolateNameServer.removePortNameMapping(_isolateLocationName);
+    IsolateNameServer.removePortNameMapping(_isolateRunningName);
     stopTracker();
     super.dispose();
   }
 
   Future stopTracker() async {
-    await BackgroundLocation.stopLocationService();
-    if (mounted) {
-      setState(() {
-        _running = false;
-      });
-    }
+    await BackgroundLocator.unRegisterLocationUpdate();
   }
 
   void toggleTracker() async {
@@ -130,29 +187,32 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
   }
 
   void startTracker() async {
-    await BackgroundLocation.startLocationService();
-
-    setState(() {
-      _running = true;
-    });
-
-    await BackgroundLocation.getLocationUpdates((location) {
-      print(location);
-
-      logPosition(location);
-
-      setState(() {
-        // This call to setState tells the Flutter framework that something has
-        // changed in this State, which causes it to rerun the build method below
-        // so that the display can reflect the updated values. If we changed
-        // _counter without calling setState(), then the build method would not be
-        // called again, and so nothing would appear to happen.
-        _location = location;
-      });
-    });
+    const distanceFilter = 0.0;
+    await BackgroundLocator.registerLocationUpdate(
+        isolateCallback,
+        initCallback: isolateInitCallback, disposeCallback: isolateDisposeCallback,
+        autoStop: false,
+        iosSettings: IOSSettings(
+            accuracy: LocationAccuracy.NAVIGATION,
+            distanceFilter: distanceFilter,
+            showsBackgroundLocationIndicator: true),
+        androidSettings: AndroidSettings(
+            accuracy: LocationAccuracy.NAVIGATION,
+            interval: 5,
+            distanceFilter: distanceFilter,
+            wakeLockTime: 12 * 60 /* 12 hours */,
+            androidNotificationSettings: AndroidNotificationSettings(
+              notificationChannelName: 'Location tracking',
+              notificationTitle: 'Location Tracking',
+              notificationMsg: 'Location tracker running in the background',
+              notificationBigMsg:
+                  'Location tracker is running in the background',
+              notificationIcon: 'assets/icon.png',
+              notificationIconColor: Colors.grey,
+            )));
   }
 
-  void logPosition(Location location) async {
+  void logPosition(LocationDto location) async {
     setState(() {
       this.count++;
     });
@@ -210,7 +270,8 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
                   child: ListBody(
                     children: <Widget>[
                       Text('Leaving this page will stop the tracking'),
-                      Text('You may close the app, tracking will continue in the background.'),
+                      Text(
+                          'You may close the app, tracking will continue in the background.'),
                     ],
                   ),
                 ),
@@ -236,51 +297,51 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 
           return false;
         },
-        child:Scaffold(
-      appBar: AppBar(
-        title: Text("Tracker"),
-      ),
-      body: Center(
-        child: _permGranted
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Column(children: [
-                    Text(
-                      'Last position:',
-                    ),
-                    Text(
-                      _location == null
-                          ? 'N/A'
-                          : '${_location.latitude} ${_location.longitude}',
-                      style: Theme.of(context).textTheme.headline4,
-                    ),
-                    isAdmin
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Checkbox(
-                                  value: postLocation,
-                                  onChanged: (v) {
-                                    setState(() {
-                                      this.postLocation = v;
-                                    });
-                                  }),
-                              Text("Post to backend ?"),
-                            ],
-                          )
-                        : null
-                  ]),
-                  RaisedButton(
-                      onPressed: this.toggleTracker,
-                      color: _running ? Colors.red : Colors.green,
-                      child: Text(_running ? 'Stop' : 'Start')),
-                  isAdmin ? Text("$count") : null
-                ],
-              )
-            : GrantPermission(),
-      ),
-    ));
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text("Tracker"),
+          ),
+          body: Center(
+            child: _permGranted
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Column(children: [
+                        Text(
+                          'Last position:',
+                        ),
+                        Text(
+                          _location == null
+                              ? 'N/A'
+                              : '${_location.latitude} ${_location.longitude}',
+                          style: Theme.of(context).textTheme.headline4,
+                        ),
+                        isAdmin
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Checkbox(
+                                      value: postLocation,
+                                      onChanged: (v) {
+                                        setState(() {
+                                          this.postLocation = v;
+                                        });
+                                      }),
+                                  Text("Post to backend ?"),
+                                ],
+                              )
+                            : null
+                      ]),
+                      RaisedButton(
+                          onPressed: this.toggleTracker,
+                          color: _running ? Colors.red : Colors.green,
+                          child: Text(_running ? 'Stop' : 'Start')),
+                      isAdmin ? Text("$count") : null
+                    ],
+                  )
+                : GrantPermission(),
+          ),
+        ));
   }
 
   void updateGrantedPerm() async {

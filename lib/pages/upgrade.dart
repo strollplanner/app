@@ -12,7 +12,7 @@ class UpgradePage extends StatefulWidget {
 
   UpgradePage(this.child);
 
-  factory UpgradePage.build(Widget child) {
+  static Widget build(Widget child) {
     if (Platform.isAndroid) {
       return UpgradePage(child);
     }

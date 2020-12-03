@@ -1,7 +1,11 @@
 PODS:
-  - background_location (0.0.1):
+  - background_locator (0.0.1):
     - Flutter
   - Flutter (1.0.0)
+  - open_file (0.0.1):
+    - Flutter
+  - path_provider (0.0.1):
+    - Flutter
   - "permission_handler (5.0.1+1)":
     - Flutter
   - uni_links (0.0.1):
@@ -10,17 +14,23 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
-  - background_location (from `.symlinks/plugins/background_location/ios`)
+  - background_locator (from `.symlinks/plugins/background_locator/ios`)
   - Flutter (from `Flutter`)
+  - open_file (from `.symlinks/plugins/open_file/ios`)
+  - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
   - uni_links (from `.symlinks/plugins/uni_links/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
 
 EXTERNAL SOURCES:
-  background_location:
-    :path: ".symlinks/plugins/background_location/ios"
+  background_locator:
+    :path: ".symlinks/plugins/background_locator/ios"
   Flutter:
     :path: Flutter
+  open_file:
+    :path: ".symlinks/plugins/open_file/ios"
+  path_provider:
+    :path: ".symlinks/plugins/path_provider/ios"
   permission_handler:
     :path: ".symlinks/plugins/permission_handler/ios"
   uni_links:
@@ -29,8 +39,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/url_launcher/ios"
 
 SPEC CHECKSUMS:
-  background_location: 1b80c1fe3abd9912bca298618f6e365abf6f588f
+  background_locator: d8daad218f2282920654de8a649b430d75c218d9
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  open_file: 02eb5cb6b21264bd3a696876f5afbfb7ca4f4b7d
+  path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   permission_handler: eac8e15b4a1a3fba55b761d19f3f4e6b005d15b6
   uni_links: d97da20c7701486ba192624d99bffaaffcfc298a
   url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef
