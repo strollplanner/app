@@ -73,6 +73,8 @@ class _UpgradePageState extends State<UpgradePage> {
       return;
     }
 
+    print("Check update");
+
     setState(() {
       this.ok = false;
       this.updating = false;

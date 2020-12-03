@@ -30,7 +30,7 @@ class LoginPage extends StatelessWidget {
               fontSize: 20.0,
             ),
           ),
-        )
+        ),
       ],
     );
   }

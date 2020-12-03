@@ -28,12 +28,19 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: '12.x'
+
       - uses: subosito/flutter-action@v1
         with:
           flutter-version: '1.22.4'
-      - run: flutter pub get
-#      - run: flutter test # Nah
-      - run: flutter build apk  --build-number ${GITHUB_RUN_NUMBER} --dart-define=RELEASE_TAG=${{steps.slug.outputs.sha8}}
+
+      - name: pub get
+        run: flutter pub get
+
+#      - name: Test
+#        run: flutter test # Nah
+
+      - name: Build
+        run: flutter build apk  --build-number ${GITHUB_RUN_NUMBER} --dart-define=RELEASE_TAG=${{steps.slug.outputs.sha8}}
       
       - name: Upload Artifacts
         uses: actions/upload-artifact@master

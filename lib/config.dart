@@ -13,7 +13,10 @@ class AppConfig extends InheritedWidget {
   final String apiBaseApiUrl;
   final String appBaseApiUrl;
 
-  final releaseTag = String.fromEnvironment('RELEASE_TAG', defaultValue: '');
+  static const _releaseTag =
+      String.fromEnvironment('RELEASE_TAG', defaultValue: '');
+
+  get releaseTag => _releaseTag;
 
   static AppConfig of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<AppConfig>();
