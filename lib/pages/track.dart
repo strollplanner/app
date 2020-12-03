@@ -90,6 +90,8 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
   Location _location;
   bool _running = false;
   bool _permGranted = false;
+  bool postLocation = true;
+  int count = 0;
 
   @override
   void initState() {
@@ -105,29 +107,36 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    stopTracker();
     super.dispose();
+  }
+
+  Future stopTracker() async {
+    await BackgroundLocation.stopLocationService();
+    if (mounted) {
+      setState(() {
+        _running = false;
+      });
+    }
   }
 
   void toggleTracker() async {
     if (_running) {
-      BackgroundLocation.stopLocationService();
-      setState(() {
-        _running = false;
-      });
+      stopTracker();
       return;
     }
 
     startTracker();
   }
 
-  void startTracker() {
-    BackgroundLocation.startLocationService();
+  void startTracker() async {
+    await BackgroundLocation.startLocationService();
 
     setState(() {
       _running = true;
     });
 
-    BackgroundLocation.getLocationUpdates((location) {
+    await BackgroundLocation.getLocationUpdates((location) {
       print(location);
 
       logPosition(location);
@@ -144,8 +153,15 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
   }
 
   void logPosition(Location location) async {
-    return;
-    var token = Provider.of<AuthService>(context, listen: false).token;
+    setState(() {
+      this.count++;
+    });
+
+    if (!postLocation) {
+      return;
+    }
+
+    print("Posting to backend");
 
     await request(
         context,
@@ -176,29 +192,57 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    var isAdmin = AuthService.of(context).currentUser.isAdmin;
+
+    return WillPopScope(
+        onWillPop: () async {
+          if (!_running) {
+            return true;
+          }
+
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false, // user must tap button!
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Tracking in progress'),
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children: <Widget>[
+                      Text('Leaving this page will stop the tracking'),
+                      Text('You may close the app, tracking will continue in the background.'),
+                    ],
+                  ),
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: Text('Continue'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  TextButton(
+                    child: Text('Leave'),
+                    onPressed: () async {
+                      await stopTracker();
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+
+          return false;
+        },
+        child:Scaffold(
       appBar: AppBar(
         title: Text("Tracker"),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: _permGranted
             ? Column(
-                // Column is also a layout widget. It takes a list of children and
-                // arranges them vertically. By default, it sizes itself to fit its
-                // children horizontally, and tries to be as tall as its parent.
-                //
-                // Invoke "debug painting" (press "p" in the console, choose the
-                // "Toggle Debug Paint" action from the Flutter Inspector in Android
-                // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-                // to see the wireframe for each widget.
-                //
-                // Column has various properties to control how it sizes itself and
-                // how it positions its children. Here we use mainAxisAlignment to
-                // center the children vertically; the main axis here is the vertical
-                // axis because Columns are vertical (the cross axis would be
-                // horizontal).
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   Column(children: [
@@ -211,16 +255,32 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
                           : '${_location.latitude} ${_location.longitude}',
                       style: Theme.of(context).textTheme.headline4,
                     ),
+                    isAdmin
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Checkbox(
+                                  value: postLocation,
+                                  onChanged: (v) {
+                                    setState(() {
+                                      this.postLocation = v;
+                                    });
+                                  }),
+                              Text("Post to backend ?"),
+                            ],
+                          )
+                        : null
                   ]),
                   RaisedButton(
                       onPressed: this.toggleTracker,
                       color: _running ? Colors.red : Colors.green,
-                      child: Text(_running ? 'Stop' : 'Start'))
+                      child: Text(_running ? 'Stop' : 'Start')),
+                  isAdmin ? Text("$count") : null
                 ],
               )
             : GrantPermission(),
       ),
-    );
+    ));
   }
 
   void updateGrantedPerm() async {

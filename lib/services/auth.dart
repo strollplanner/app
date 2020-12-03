@@ -8,18 +8,16 @@ import 'package:uni_links/uni_links.dart';
 class User {
   String id;
   String email;
+  bool isAdmin;
 
-  User({this.id, this.email});
+  User({this.id, this.email, this.isAdmin});
 
   factory User.fromJson(Map<String, dynamic> json) {
     if (json == null) {
       return null;
     }
 
-    return User(
-      id: json['id'],
-      email: json['email'],
-    );
+    return User(id: json['id'], email: json['email'], isAdmin: json['isAdmin']);
   }
 }
 
@@ -103,6 +101,7 @@ class AuthService with ChangeNotifier {
       viewer {
         id
         email
+        isAdmin
       }
     } 
 """,
