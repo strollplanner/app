@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:background_locator/background_locator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
-import 'package:strollplanner_tracker/services/gql.dart';
 
 class GrantPermission extends StatelessWidget {
   @override
@@ -118,8 +117,17 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 
     WidgetsBinding.instance.addObserver(this);
 
-    Future.delayed(Duration.zero, () {
-      updateGrantedPerm();
+    Future.delayed(Duration.zero, () async {
+      initPlatformState();
+    });
+  }
+
+  void initPlatformState() async {
+    updateGrantedPerm();
+
+    var running = await BackgroundLocator.isRegisterLocationUpdate();
+    setState(() {
+      this._running = running;
     });
   }
 
@@ -160,7 +168,7 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 
   static void isolateRunning(bool running) {
     final SendPort send =
-    IsolateNameServer.lookupPortByName(_isolateRunningName);
+        IsolateNameServer.lookupPortByName(_isolateRunningName);
     send?.send(running);
   }
 
@@ -188,9 +196,9 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 
   void startTracker() async {
     const distanceFilter = 0.0;
-    await BackgroundLocator.registerLocationUpdate(
-        isolateCallback,
-        initCallback: isolateInitCallback, disposeCallback: isolateDisposeCallback,
+    await BackgroundLocator.registerLocationUpdate(isolateCallback,
+        initCallback: isolateInitCallback,
+        disposeCallback: isolateDisposeCallback,
         autoStop: false,
         iosSettings: IOSSettings(
             accuracy: LocationAccuracy.NAVIGATION,
@@ -223,7 +231,7 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 
     print("Posting to backend");
 
-    await request(
+    await AuthService.of(context, listen: false).request(
         context,
         """
     mutation (\$orgId: ID!, \$id: ID!, \$lat: Float!, \$lng: Float!, \$acc: Float!) {

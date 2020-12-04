@@ -39,20 +39,18 @@ class Response<D> {
 }
 
 Future<Response<D>> request<D>(
-    BuildContext context, String query, DataFactory<D> df,
+    AppConfig config, String query, DataFactory<D> df,
     {Map<String, Object> variables, String token}) async {
   var headers = <String, String>{
     'Content-Type': 'application/json',
   };
 
-  var reqToken =
-      token != null ? token : AuthService.of(context, listen: false).token;
-  if (reqToken != null) {
-    headers['Authorization'] = 'Bearer $reqToken';
+  if (token != null && token != "") {
+    headers['Authorization'] = 'Bearer $token';
   }
 
   final res = await http.post(
-    '${AppConfig.of(context).apiBaseApiUrl}/graphql',
+    '${config.apiBaseApiUrl}/graphql',
     headers: headers,
     body: jsonEncode(<String, dynamic>{
       'query': query,

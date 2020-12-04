@@ -83,7 +83,7 @@ class _OrganizationsPageState extends State<OrganizationsPage> {
       this.organizations = null;
     });
 
-    var res = await request(
+    var res = await AuthService.of(context, listen: false).request(
         context,
         """
     query  {

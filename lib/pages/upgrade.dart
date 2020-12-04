@@ -45,9 +45,7 @@ class _UpgradePageState extends State<UpgradePage> {
   _UpgradePageState(this.widget);
 
   bool shouldRun() {
-    var releaseTag = AppConfig
-        .of(context)
-        .releaseTag;
+    var releaseTag = AppConfig.of(context).releaseTag;
     return releaseTag != "";
   }
 
@@ -82,7 +80,7 @@ class _UpgradePageState extends State<UpgradePage> {
     });
 
     var res = await request(
-        context,
+        AppConfig.of(context),
         """
     query {
       r: latestAndroidRelease {
@@ -91,11 +89,9 @@ class _UpgradePageState extends State<UpgradePage> {
       }
     }
     """,
-            (m) => AndroidRelease.fromJson(m["r"]));
+        (m) => AndroidRelease.fromJson(m["r"]));
 
-    if (res.data == null || res.data.tag == AppConfig
-        .of(context)
-        .releaseTag) {
+    if (res.data == null || res.data.tag == AppConfig.of(context).releaseTag) {
       setState(() {
         this.ok = true;
       });

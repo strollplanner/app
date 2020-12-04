@@ -38,6 +38,8 @@ dependencies:
   flutter_launcher_icons: ^0.8.1
   open_file: ^3.0.3
   path_provider: ^1.6.24
+  flutter_secure_storage: ^3.3.5
+  shared_preferences: ^0.5.12+4
 
 dev_dependencies:
   flutter_test:
