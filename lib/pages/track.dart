@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
@@ -9,7 +10,28 @@ import 'package:background_locator/settings/locator_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:background_locator/background_locator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:strollplanner_tracker/config.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
+import 'package:strollplanner_tracker/services/gql.dart';
+import 'package:strollplanner_tracker/services/tracker.dart';
+
+class TrackerService {
+  static AppConfig config;
+  static String token;
+  static String orgId;
+  static String routeId;
+  static bool enabled = false;
+
+  static init(AppConfig config, String token, String orgId, String routeId,
+      bool enabled) {
+    TrackerService.config = config;
+    TrackerService.token = token;
+    TrackerService.orgId = orgId;
+    TrackerService.routeId = routeId;
+    TrackerService.enabled = enabled;
+  }
+}
 
 class GrantPermission extends StatelessWidget {
   @override
@@ -90,94 +112,68 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 
   _TrackPageState(this.orgId, this.routeId);
 
+  int _count;
   LocationDto _location;
   bool _running = false;
   bool _permGranted = false;
   bool postLocation = true;
-  int count = 0;
-
-  static const String _isolateLocationName = "TrackLocation";
-  ReceivePort locationPort = ReceivePort();
-  static const String _isolateRunningName = "TrackRunning";
-  ReceivePort runningPort = ReceivePort();
+  ReceivePort port = ReceivePort();
 
   @override
   void initState() {
     super.initState();
 
-    IsolateNameServer.registerPortWithName(
-        locationPort.sendPort, _isolateLocationName);
-    locationPort.listen((d) => dataCallback(d));
+    if (IsolateNameServer.lookupPortByName(
+            LocationServiceRepository.isolateName) !=
+        null) {
+      IsolateNameServer.removePortNameMapping(
+          LocationServiceRepository.isolateName);
+    }
 
     IsolateNameServer.registerPortWithName(
-        runningPort.sendPort, _isolateRunningName);
-    runningPort.listen((d) => runningCallback(d));
+        port.sendPort, LocationServiceRepository.isolateName);
 
-    BackgroundLocator.initialize();
-
-    WidgetsBinding.instance.addObserver(this);
-
-    Future.delayed(Duration.zero, () async {
-      initPlatformState();
-    });
+    port.listen(
+      (dynamic data) async {
+        await updateUI(data);
+      },
+    );
+    initPlatformState();
   }
 
-  void initPlatformState() async {
-    updateGrantedPerm();
+  Future<void> updateUI(LocationUpdate data) async {
+    updateRunning();
+    if (data != null) {
+      setState(() {
+        _location = data.location;
+        _count = data.count;
+      });
+    } else {
+      setState(() {
+        _location = null;
+        _count = null;
+      });
+    }
+  }
 
-    var running = await BackgroundLocator.isRegisterLocationUpdate();
+  void updateRunning() async {
+    var running = await BackgroundLocator.isServiceRunning();
     setState(() {
       this._running = running;
     });
   }
 
-  void dataCallback(LocationDto location) async {
-    print(location);
-
-    setState(() {
-      _location = location;
-    });
-
-    logPosition(location);
-  }
-
-  void runningCallback(bool running) {
-    if (mounted) {
-      setState(() {
-        _running = running;
-      });
-    }
-  }
-
-  static void isolateCallback(LocationDto location) async {
-    print("location");
-    final SendPort send =
-        IsolateNameServer.lookupPortByName(_isolateLocationName);
-    send?.send(location);
-  }
-
-  static void isolateInitCallback(_) async {
-    print("init");
-    isolateRunning(true);
-  }
-
-  static void isolateDisposeCallback() async {
-    print("dispose");
-    isolateRunning(false);
-  }
-
-  static void isolateRunning(bool running) {
-    final SendPort send =
-        IsolateNameServer.lookupPortByName(_isolateRunningName);
-    send?.send(running);
+  void initPlatformState() async {
+    await BackgroundLocator.initialize();
+    updateGrantedPerm();
+    updateRunning();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    IsolateNameServer.removePortNameMapping(_isolateLocationName);
-    IsolateNameServer.removePortNameMapping(_isolateRunningName);
-    stopTracker();
+    IsolateNameServer.removePortNameMapping(
+        LocationServiceRepository.isolateName);
     super.dispose();
   }
 
@@ -195,10 +191,28 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
   }
 
   void startTracker() async {
+    TrackerService.init(AppConfig.of(context), await AuthService.getToken(),
+        this.routeId, this.orgId, this.postLocation);
+
     const distanceFilter = 0.0;
-    await BackgroundLocator.registerLocationUpdate(isolateCallback,
-        initCallback: isolateInitCallback,
-        disposeCallback: isolateDisposeCallback,
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+        "session", jsonEncode(Session(this.orgId, this.routeId).toMap()));
+
+    Map<String, dynamic> data = {
+      'count': 1,
+      'orgId': this.orgId,
+      'routeId': this.routeId,
+      'config': AppConfig.of(context).toMap(),
+      'token': await AuthService.getToken(),
+      'postBackend': postLocation,
+    };
+    await BackgroundLocator.registerLocationUpdate(
+        LocationCallbackHandler.callback,
+        initCallback: LocationCallbackHandler.initCallback,
+        initDataCallback: data,
+        disposeCallback: LocationCallbackHandler.disposeCallback,
         autoStop: false,
         iosSettings: IOSSettings(
             accuracy: LocationAccuracy.NAVIGATION,
@@ -210,46 +224,15 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
             distanceFilter: distanceFilter,
             wakeLockTime: 12 * 60 /* 12 hours */,
             androidNotificationSettings: AndroidNotificationSettings(
-              notificationChannelName: 'Location tracking',
-              notificationTitle: 'Location Tracking',
-              notificationMsg: 'Location tracker running in the background',
-              notificationBigMsg:
-                  'Location tracker is running in the background',
-              notificationIcon: 'assets/icon.png',
-              notificationIconColor: Colors.grey,
-            )));
-  }
-
-  void logPosition(LocationDto location) async {
-    setState(() {
-      this.count++;
-    });
-
-    if (!postLocation) {
-      return;
-    }
-
-    print("Posting to backend");
-
-    await AuthService.of(context, listen: false).request(
-        context,
-        """
-    mutation (\$orgId: ID!, \$id: ID!, \$lat: Float!, \$lng: Float!, \$acc: Float!) {
-			  tracker(organizationId: \$orgId, id: \$id, input: {
-					lat: \$lat,
-					lng: \$lng,
-					acc: \$acc,
-				})
-			}
-    """,
-        (_) => null,
-        variables: {
-          "orgId": this.orgId,
-          "id": this.routeId,
-          "lat": location.latitude,
-          "lng": location.longitude,
-          "acc": location.accuracy,
-        });
+                notificationChannelName: 'Location tracking',
+                notificationTitle: 'Location Tracking',
+                notificationMsg: 'Location tracker running in the background',
+                notificationBigMsg:
+                    'Location tracker is running in the background',
+                notificationIcon: 'assets/icon.png',
+                notificationIconColor: Colors.grey,
+                notificationTapCallback:
+                    LocationCallbackHandler.notificationCallback)));
   }
 
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -293,7 +276,7 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
                   TextButton(
                     child: Text('Leave'),
                     onPressed: () async {
-                      await stopTracker();
+                      stopTracker();
                       Navigator.pop(context);
                       Navigator.pop(context);
                     },
@@ -334,6 +317,7 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
                                         setState(() {
                                           this.postLocation = v;
                                         });
+                                        TrackerService.enabled = v;
                                       }),
                                   Text("Post to backend ?"),
                                 ],
@@ -344,7 +328,7 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
                           onPressed: this.toggleTracker,
                           color: _running ? Colors.red : Colors.green,
                           child: Text(_running ? 'Stop' : 'Start')),
-                      isAdmin ? Text("$count") : null
+                      isAdmin ? Text("$_count") : null
                     ],
                   )
                 : GrantPermission(),

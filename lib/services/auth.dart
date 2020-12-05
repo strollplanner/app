@@ -83,15 +83,18 @@ class AuthService with ChangeNotifier {
     return;
   }
 
+  static Future<String> getToken() async {
+    final _storage = FlutterSecureStorage();
+    return await _storage.read(key: "token");
+  }
+
   Future<gql.Response<D>> request<D>(
       BuildContext context, String query, gql.DataFactory<D> df,
       {Map<String, Object> variables}) async {
-    final _storage = FlutterSecureStorage();
-    var token = await _storage.read(key: "token");
-
     var config = AppConfig.of(context);
 
-    return gql.request(config, query, df, variables: variables, token: token);
+    return gql.request(config, query, df,
+        variables: variables, token: await getToken());
   }
 
   Future storeToken(String token) async {

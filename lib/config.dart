@@ -20,6 +20,21 @@ class AppConfig {
   static AppConfig of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<AppConfigWidget>().config;
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'flavorName': flavorName,
+      'apiBaseApiUrl': apiBaseApiUrl,
+      'appBaseApiUrl': appBaseApiUrl,
+    };
+  }
+
+  factory AppConfig.fromMap(dynamic m) {
+    return AppConfig(
+        flavorName: m['flavorName'],
+        apiBaseApiUrl: m['apiBaseApiUrl'],
+        appBaseApiUrl: m['appBaseApiUrl']);
+  }
 }
 
 class AppConfigWidget extends InheritedWidget {
