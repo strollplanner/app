@@ -309,46 +309,50 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
           appBar: AppBar(
             title: Text("Tracker"),
           ),
-          body: Center(
-            child: _permGranted
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      Column(children: [
-                        Text(
-                          'Last position:',
+          body: Center(child: Builder(builder: (BuildContext context) {
+            if (!_permGranted) {
+              return GrantPermission();
+            }
+
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Column(children: [
+                  Text(
+                    'Last position:',
+                  ),
+                  Text(
+                    _location == null
+                        ? 'N/A'
+                        : '${_location.latitude} ${_location.longitude}',
+                    style: Theme.of(context).textTheme.headline4,
+                  ),
+                ]),
+                RaisedButton(
+                    onPressed: this.toggleTracker,
+                    color: _running ? Colors.red : Colors.green,
+                    child: Text(_running ? 'Stop' : 'Start')),
+                isAdmin
+                    ? Column(children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Checkbox(
+                                value: postLocation,
+                                onChanged: (v) {
+                                  setState(() {
+                                    this.postLocation = v;
+                                  });
+                                }),
+                            Text("Post to backend ?"),
+                          ],
                         ),
-                        Text(
-                          _location == null
-                              ? 'N/A'
-                              : '${_location.latitude} ${_location.longitude}',
-                          style: Theme.of(context).textTheme.headline4,
-                        ),
-                        isAdmin
-                            ? Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Checkbox(
-                                      value: postLocation,
-                                      onChanged: (v) {
-                                        setState(() {
-                                          this.postLocation = v;
-                                        });
-                                      }),
-                                  Text("Post to backend ?"),
-                                ],
-                              )
-                            : null
-                      ]),
-                      RaisedButton(
-                          onPressed: this.toggleTracker,
-                          color: _running ? Colors.red : Colors.green,
-                          child: Text(_running ? 'Stop' : 'Start')),
-                      isAdmin ? Text("$_count") : null
-                    ],
-                  )
-                : GrantPermission(),
-          ),
+                        Text("$_count")
+                      ])
+                    : null
+              ],
+            );
+          })),
         ));
   }
 
