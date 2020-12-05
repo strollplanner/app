@@ -38,7 +38,7 @@ class Route {
       id: json["id"],
       title: json["title"],
       publishedAt: json["publishedAt"],
-      totalLength: json["totalLength"],
+      totalLength: double.parse(json["totalLength"].toString()),
       canceledAt: json["canceledAt"],
     );
   }
@@ -102,7 +102,7 @@ class _RoutesPageState extends State<RoutesPage> {
     var res = await AuthService.of(context, listen: false).request(
         context,
         """
-    query Organizations(\$orgId: ID!) {
+    query (\$orgId: ID!) {
       organization(id: \$orgId) {
         routes(first: 10, after: "") {
           edges {

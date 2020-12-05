@@ -83,7 +83,7 @@ class _OrganizationsPageState extends State<OrganizationsPage> {
     var res = await AuthService.of(context, listen: false).request(
         context,
         """
-    query  {
+    query {
       viewer {
         memberships {
           organization {

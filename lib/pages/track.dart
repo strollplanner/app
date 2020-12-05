@@ -239,7 +239,7 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
             accuracy: LocationAccuracy.NAVIGATION,
             interval: 5,
             distanceFilter: distanceFilter,
-            wakeLockTime: 12 * 60 /* 12 hours */,
+            wakeLockTime: 2147483647 /* max value */,
             androidNotificationSettings: AndroidNotificationSettings(
                 notificationChannelName: 'Location tracking',
                 notificationTitle: 'Location Tracking',
@@ -307,8 +307,44 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: Text("Tracker"),
-          ),
+              title: Text("Tracker"),
+              actions: isAdmin
+                  ? <Widget>[
+                      FlatButton(
+                        textColor: Colors.white,
+                        onPressed: () async {
+                          await showModalBottomSheet(
+                              context: context,
+                              builder: (context) {
+                                return StatefulBuilder(builder:
+                                    (BuildContext context,
+                                        StateSetter setState) {
+                                  return Column(children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Checkbox(
+                                            value: postLocation,
+                                            onChanged: (v) {
+                                              setState(() {
+                                                this.postLocation = v;
+                                              });
+                                            }),
+                                        Text("Post to backend ?"),
+                                      ],
+                                    ),
+                                    Text("Count: $_count")
+                                  ]);
+                                });
+                              });
+                        },
+                        child: Text("Admin"),
+                        shape: CircleBorder(
+                            side: BorderSide(color: Colors.transparent)),
+                      ),
+                    ]
+                  : []),
           body: Center(child: Builder(builder: (BuildContext context) {
             if (!_permGranted) {
               return GrantPermission();
@@ -332,24 +368,6 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
                     onPressed: this.toggleTracker,
                     color: _running ? Colors.red : Colors.green,
                     child: Text(_running ? 'Stop' : 'Start')),
-                isAdmin
-                    ? Column(children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Checkbox(
-                                value: postLocation,
-                                onChanged: (v) {
-                                  setState(() {
-                                    this.postLocation = v;
-                                  });
-                                }),
-                            Text("Post to backend ?"),
-                          ],
-                        ),
-                        Text("$_count")
-                      ])
-                    : null
               ],
             );
           })),
