@@ -9,6 +9,6 @@ void main() {
       apiBaseApiUrl: 'https://api.stroll.pl',
       appBaseApiUrl: 'https://app.stroll.pl',
     ),
-    child: build(),
+    child: root(),
   ));
 }

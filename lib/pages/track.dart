@@ -13,23 +13,43 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:strollplanner_tracker/config.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
-import 'package:strollplanner_tracker/services/gql.dart';
 import 'package:strollplanner_tracker/services/tracker.dart';
 
-class TrackerService {
-  static AppConfig config;
-  static String token;
-  static String orgId;
-  static String routeId;
-  static bool enabled = false;
+class TrackSessionRedirector extends StatelessWidget {
+  final Widget child;
 
-  static init(AppConfig config, String token, String orgId, String routeId,
-      bool enabled) {
-    TrackerService.config = config;
-    TrackerService.token = token;
-    TrackerService.orgId = orgId;
-    TrackerService.routeId = routeId;
-    TrackerService.enabled = enabled;
+  TrackSessionRedirector(this.child);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: fetchSession(context),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [CircularProgressIndicator()]);
+          }
+
+          return child;
+        });
+  }
+
+  Future fetchSession(BuildContext context) async {
+    var s = await LocationCallbackHandler.getSession();
+    print("Session: ${s?.toMap()}");
+
+    if (s == null) {
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TrackPage(s.orgId, s.routeId),
+      ),
+    );
   }
 }
 
@@ -191,9 +211,6 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
   }
 
   void startTracker() async {
-    TrackerService.init(AppConfig.of(context), await AuthService.getToken(),
-        this.routeId, this.orgId, this.postLocation);
-
     const distanceFilter = 0.0;
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -317,7 +334,6 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
                                         setState(() {
                                           this.postLocation = v;
                                         });
-                                        TrackerService.enabled = v;
                                       }),
                                   Text("Post to backend ?"),
                                 ],

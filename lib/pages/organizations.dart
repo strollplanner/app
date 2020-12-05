@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:strollplanner_tracker/pages/routes.dart';
-import 'package:strollplanner_tracker/pages/track.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
-import 'package:strollplanner_tracker/services/gql.dart';
-import 'package:strollplanner_tracker/services/tracker.dart';
 
 class OrganizationsPage extends StatefulWidget {
   @override
@@ -54,33 +51,31 @@ class _OrganizationsPageState extends State<OrganizationsPage> {
           ],
         ),
         body: organizations == null
-            ? CircularProgressIndicator()
-            : ListView.builder(
-                itemCount: organizations.length,
-                itemBuilder: (context, index) {
-                  var org = organizations[index];
-                  return ListTile(
-                    leading: Image.network(org.logoUrl),
-                    title: Text(org.name),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RoutesPage(org.id),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: fetchOrganizations,
-          tooltip: 'Refresh',
-          child: Icon(Icons.refresh),
-        ));
+            ? Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                child: ListView.builder(
+                  itemCount: organizations.length,
+                  itemBuilder: (context, index) {
+                    var org = organizations[index];
+                    return ListTile(
+                      leading: Image.network(org.logoUrl),
+                      title: Text(org.name),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RoutesPage(org.id),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+                onRefresh: fetchOrganizations,
+              ));
   }
 
-  void fetchOrganizations() async {
+  Future fetchOrganizations() async {
     setState(() {
       this.organizations = null;
     });
@@ -107,25 +102,8 @@ class _OrganizationsPageState extends State<OrganizationsPage> {
     });
   }
 
-  void redirectToSession() async {
-    var s = await LocationCallbackHandler.getSession();
-    print("Session: ${s?.toMap()}");
-
-    if (s == null) {
-      return;
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TrackPage(s.orgId, s.routeId),
-      ),
-    );
-  }
-
   void initPlatformState() async {
     fetchOrganizations();
-    redirectToSession();
   }
 
   @override

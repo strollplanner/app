@@ -1,10 +1,11 @@
 import 'package:provider/provider.dart';
 import 'package:strollplanner_tracker/pages/organizations.dart';
-import 'package:strollplanner_tracker/pages/upgrade.dart';
+import 'package:strollplanner_tracker/pages/track.dart';
+import 'package:strollplanner_tracker/pages/update.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
 import 'package:flutter/material.dart';
 
-Widget build() {
+Widget root() {
   return ChangeNotifierProvider<AuthService>(
     child: RootPage(),
     create: (context) => AuthService(context),
@@ -44,7 +45,9 @@ class RootPage extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Material(child: UpgradePage.build(AuthWidget(OrganizationsPage()))),
+      home: Material(
+          child: UpdatePage.build(
+              AuthWidget(TrackSessionRedirector(OrganizationsPage())))),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:strollplanner_tracker/pages/track.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
@@ -46,32 +48,31 @@ class _RoutesPageState extends State<RoutesPage> {
           title: Text("Routes"),
         ),
         body: routes == null
-            ? CircularProgressIndicator()
-            : ListView.builder(
-                itemCount: routes.length,
-                itemBuilder: (context, index) {
-                  var route = routes[index];
-                  return ListTile(
-                    title: Text(route.title),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TrackPage(this.orgId, route.id),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: fetchRoutes,
-          tooltip: 'Refresh',
-          child: Icon(Icons.refresh),
-        ));
+            ? Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                child: ListView.builder(
+                  itemCount: routes.length,
+                  itemBuilder: (context, index) {
+                    var route = routes[index];
+                    return ListTile(
+                      title: Text(route.title),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                TrackPage(this.orgId, route.id),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+                onRefresh: fetchRoutes,
+              ));
   }
 
-  void fetchRoutes() async {
+  Future fetchRoutes() async {
     setState(() {
       this.routes = null;
     });

@@ -9,6 +9,6 @@ void main() {
       apiBaseApiUrl: 'https://api.stagingstrollpl.ovh',
       appBaseApiUrl: 'https://app.stagingstrollpl.ovh',
     ),
-    child: build(),
+    child: root(),
   ));
 }
