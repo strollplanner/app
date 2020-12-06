@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:retry/retry.dart';
 import 'package:strollplanner_tracker/config.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
 
@@ -49,13 +52,24 @@ Future<Response<D>> request<D>(
     headers['Authorization'] = 'Bearer $token';
   }
 
-  final res = await http.post(
-    '${config.apiBaseApiUrl}/graphql',
-    headers: headers,
-    body: jsonEncode(<String, dynamic>{
-      'query': query,
-      'variables': variables,
-    }),
+  final res = await retry(
+    () => http
+        .post(
+          '${config.apiBaseApiUrl}/graphql',
+          headers: headers,
+          body: jsonEncode(<String, dynamic>{
+            'query': query,
+            'variables': variables,
+          }),
+        )
+        .timeout(Duration(seconds: 5)),
+    maxDelay: Duration(minutes: 1),
+    maxAttempts: 15,
+    onRetry: (e) {
+      print("Retry: ${e.toString()}");
+    },
+    // Retry on SocketException or TimeoutException
+    retryIf: (e) => e is SocketException || e is TimeoutException,
   );
 
   if (res.statusCode == 200 || res.statusCode == 422) {

@@ -4,6 +4,8 @@ import 'dart:isolate';
 import 'dart:ui';
 import 'package:background_locator/background_locator.dart';
 import 'package:background_locator/location_dto.dart';
+import 'package:retry/retry.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:strollplanner_tracker/config.dart';
 import 'package:strollplanner_tracker/services/gql.dart';
@@ -82,7 +84,7 @@ class LocationServiceRepository {
   }
 
   Future<void> callback(LocationDto location) async {
-    print('$_count location in dart: ${location.toString()}');
+    print('$_count location: ${location.toString()}');
     final SendPort send = IsolateNameServer.lookupPortByName(isolateName);
     send?.send(LocationUpdate(location, _count));
 
@@ -91,26 +93,39 @@ class LocationServiceRepository {
     if (_postBackend) {
       print("Posting to backend");
 
-      await request(
-          _config,
-          """
-    mutation (\$orgId: ID!, \$id: ID!, \$lat: Float!, \$lng: Float!, \$acc: Float!) {
+      var variables = {
+        "orgId": _orgId,
+        "id": _routeId,
+        "lat": location.latitude,
+        "lng": location.longitude,
+        "acc": location.accuracy,
+        "time": DateTime.fromMillisecondsSinceEpoch(location.time.round())
+            .toUtc()
+            .toIso8601String(),
+      };
+
+      try {
+        await request(
+            _config,
+            """
+    mutation (\$orgId: ID!, \$id: ID!, \$lat: Float!, \$lng: Float!, \$acc: Float!, \$time: Time) {
 			  tracker(organizationId: \$orgId, id: \$id, input: {
 					lat: \$lat,
 					lng: \$lng,
 					acc: \$acc,
+					time: \$time,
 				})
 			}
     """,
-          (_) => null,
-          variables: {
-            "orgId": _orgId,
-            "id": _routeId,
-            "lat": location.latitude,
-            "lng": location.longitude,
-            "acc": location.accuracy,
-          },
-          token: _token);
+            (_) => null,
+            variables: variables,
+            token: _token);
+      } catch (exception, stacktrace) {
+        await Sentry.captureException(
+          exception,
+          stackTrace: stacktrace,
+        );
+      }
     }
   }
 }

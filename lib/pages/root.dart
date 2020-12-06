@@ -1,15 +1,33 @@
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:strollplanner_tracker/config.dart';
 import 'package:strollplanner_tracker/pages/organizations.dart';
 import 'package:strollplanner_tracker/pages/track.dart';
 import 'package:strollplanner_tracker/pages/update.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
 import 'package:flutter/material.dart';
 
-Widget root() {
-  return ChangeNotifierProvider<AuthService>(
-    child: RootPage(),
-    create: (context) => AuthService(context),
+Future runRoot({config: AppConfig}) async {
+  var app = AppConfigWidget(
+    config: config,
+    child: ChangeNotifierProvider<AuthService>(
+      child: RootPage(),
+      create: (context) => AuthService(context),
+    ),
   );
+
+  if (kReleaseMode) {
+    return SentryFlutter.init(
+      (options) => options
+        ..dsn =
+            'https://efe61439a63446f78bcc661a4489dde3@o44685.ingest.sentry.io/5546076'
+        ..environment = config.flavorName,
+      appRunner: () => runApp(app),
+    );
+  }
+
+  return runApp(app);
 }
 
 class RootPage extends StatelessWidget {
