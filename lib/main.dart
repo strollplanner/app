@@ -3,10 +3,9 @@ import 'package:strollplanner_tracker/pages/root.dart';
 
 void main() {
   runRoot(
-    config: AppConfig(
+    config: AppConfig.init(
       flavorName: 'prod',
-      apiBaseApiUrl: 'https://api.stroll.pl',
-      appBaseApiUrl: 'https://app.stroll.pl',
+      basePlatformUrl: 'https://stroll.pl',
     ),
   );
 }

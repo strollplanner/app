@@ -17,7 +17,23 @@ class AppConfig {
 
   get releaseTag => _releaseTag;
 
-  static AppConfig of(BuildContext context) {
+  factory AppConfig.init({
+    @required flavorName,
+    @required basePlatformUrl,
+  }) {
+    var app = Uri.parse(basePlatformUrl);
+    app = app.replace(host: "app.${app.host}");
+
+    var api = Uri.parse(basePlatformUrl);
+    api = api.replace(host: "api.${api.host}");
+
+    return AppConfig(
+        flavorName: flavorName,
+        apiBaseApiUrl: api.toString(),
+        appBaseApiUrl: app.toString());
+  }
+
+  factory AppConfig.of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<AppConfigWidget>().config;
   }
 
