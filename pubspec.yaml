@@ -41,7 +41,7 @@ dependencies:
   flutter_secure_storage: ^3.3.5
   shared_preferences: ^0.5.12+4
   retry: ^3.0.1
-  sentry_flutter: ^4.0.0-beta.2
+  sentry_flutter: ^4.0.0
 
 dev_dependencies:
   flutter_test:
