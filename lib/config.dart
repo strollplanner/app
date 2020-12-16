@@ -4,13 +4,13 @@ import 'package:meta/meta.dart';
 class AppConfig {
   AppConfig({
     @required this.flavorName,
-    @required this.apiBaseApiUrl,
-    @required this.appBaseApiUrl,
+    @required this.apiBaseUrl,
+    @required this.appBaseUrl,
   });
 
   final String flavorName;
-  final String apiBaseApiUrl;
-  final String appBaseApiUrl;
+  final String apiBaseUrl;
+  final String appBaseUrl;
 
   static const _releaseTag =
       String.fromEnvironment('RELEASE_TAG', defaultValue: '');
@@ -29,8 +29,8 @@ class AppConfig {
 
     return AppConfig(
         flavorName: flavorName,
-        apiBaseApiUrl: api.toString(),
-        appBaseApiUrl: app.toString());
+        apiBaseUrl: api.toString(),
+        appBaseUrl: app.toString());
   }
 
   factory AppConfig.of(BuildContext context) {
@@ -40,16 +40,16 @@ class AppConfig {
   Map<String, dynamic> toMap() {
     return {
       'flavorName': flavorName,
-      'apiBaseApiUrl': apiBaseApiUrl,
-      'appBaseApiUrl': appBaseApiUrl,
+      'apiBaseUrl': apiBaseUrl,
+      'appBaseUrl': appBaseUrl,
     };
   }
 
   factory AppConfig.fromMap(dynamic m) {
     return AppConfig(
         flavorName: m['flavorName'],
-        apiBaseApiUrl: m['apiBaseApiUrl'],
-        appBaseApiUrl: m['appBaseApiUrl']);
+        apiBaseUrl: m['apiBaseUrl'],
+        appBaseUrl: m['appBaseUrl']);
   }
 }
 

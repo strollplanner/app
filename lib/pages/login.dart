@@ -13,7 +13,7 @@ class LoginPage extends StatelessWidget {
         Image(image: AssetImage('assets/icon.png'), width: 100),
         ElevatedButton(
           onPressed: () async {
-            var url = '${AppConfig.of(context).appBaseApiUrl}/magic-login';
+            var url = '${AppConfig.of(context).appBaseUrl}/magic-login';
             if (await canLaunch(url)) {
               await launch(
                 url,

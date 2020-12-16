@@ -55,7 +55,7 @@ Future<Response<D>> request<D>(
   final res = await retry(
     () => http
         .post(
-          '${config.apiBaseApiUrl}/graphql',
+          '${config.apiBaseUrl}/graphql',
           headers: headers,
           body: jsonEncode(<String, dynamic>{
             'query': query,

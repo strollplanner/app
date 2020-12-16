@@ -154,7 +154,7 @@ class RouteItem extends StatelessWidget {
                 Row(
                   children: [
                     Image.network(
-                      "${AppConfig.of(context).apiBaseApiUrl}/orgs/$orgId/routes/${route.id}/static/simplified/300/300",
+                      "${AppConfig.of(context).apiBaseUrl}/orgs/$orgId/routes/${route.id}/static/simplified/300/300",
                       width: 150,
                     ),
                     Container(
