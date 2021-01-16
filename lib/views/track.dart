@@ -143,6 +143,8 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
 
+    WidgetsBinding.instance.addObserver(this);
+
     if (IsolateNameServer.lookupPortByName(
             LocationServiceRepository.isolateName) !=
         null) {
@@ -255,6 +257,7 @@ class _TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       updateGrantedPerm();
+      updateRunning();
     }
   }
 

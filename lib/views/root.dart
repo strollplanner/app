@@ -2,9 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:strollplanner_tracker/config.dart';
-import 'package:strollplanner_tracker/pages/organizations.dart';
-import 'package:strollplanner_tracker/pages/track.dart';
-import 'package:strollplanner_tracker/pages/update.dart';
+import 'package:strollplanner_tracker/views/auth.dart';
+import 'package:strollplanner_tracker/views/organizations/list.dart';
+import 'package:strollplanner_tracker/views/track.dart';
+import 'package:strollplanner_tracker/views/update.dart';
 import 'package:strollplanner_tracker/services/auth.dart';
 import 'package:flutter/material.dart';
 

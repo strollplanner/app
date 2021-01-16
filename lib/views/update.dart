@@ -63,7 +63,7 @@ class _UpdatePageState extends State<UpdatePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (status == UpdateStatus.done || !shouldRun()) {
+    if (!shouldRun()) {
       return widget.child;
     }
 

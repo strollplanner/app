@@ -10,7 +10,7 @@ class LoginPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(height: 0),
-        Image(image: AssetImage('assets/icon.png'), width: 100),
+        Image.asset('assets/icon.png', width: 100),
         ElevatedButton(
           onPressed: () async {
             var url = '${AppConfig.of(context).appBaseUrl}/magic-login';

@@ -3,25 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:strollplanner_tracker/config.dart';
-import 'package:strollplanner_tracker/pages/login.dart';
 import 'package:strollplanner_tracker/services/gql.dart' as gql;
 import 'package:uni_links/uni_links.dart';
-
-class User {
-  String id;
-  String email;
-  bool isAdmin;
-
-  User({this.id, this.email, this.isAdmin});
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    if (json == null) {
-      return null;
-    }
-
-    return User(id: json['id'], email: json['email'], isAdmin: json['isAdmin']);
-  }
-}
+import 'package:strollplanner_tracker/models/user.dart';
 
 class ViewerData {
   User viewer;
@@ -31,26 +15,6 @@ class ViewerData {
   factory ViewerData.fromJson(Map<String, dynamic> json) {
     return ViewerData(
       viewer: User.fromJson(json['viewer']),
-    );
-  }
-}
-
-class AuthWidget extends StatelessWidget {
-  final Widget child;
-
-  AuthWidget(this.child);
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: AuthService.of(context).fetchUser(),
-      builder: (context, AsyncSnapshot snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return snapshot.hasData ? child : LoginPage();
-        } else {
-          return Material(child: Center(child: CircularProgressIndicator()));
-        }
-      },
     );
   }
 }

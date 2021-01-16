@@ -1,5 +1,5 @@
 import 'package:strollplanner_tracker/config.dart';
-import 'package:strollplanner_tracker/pages/root.dart';
+import 'package:strollplanner_tracker/views/root.dart';
 
 void main() {
   runRoot(
