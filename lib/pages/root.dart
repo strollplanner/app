@@ -62,6 +62,7 @@ class RootPage extends StatelessWidget {
         // the app on. For desktop platforms, the controls will be smaller and
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        backgroundColor: Color(0xf4f4f4ff)
       ),
       home: Material(
           child: UpdatePage.build(

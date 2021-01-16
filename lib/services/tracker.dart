@@ -4,7 +4,6 @@ import 'dart:isolate';
 import 'dart:ui';
 import 'package:background_locator/background_locator.dart';
 import 'package:background_locator/location_dto.dart';
-import 'package:retry/retry.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:strollplanner_tracker/config.dart';

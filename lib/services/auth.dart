@@ -48,12 +48,7 @@ class AuthWidget extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.done) {
           return snapshot.hasData ? child : LoginPage();
         } else {
-          return Material(
-              child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [CircularProgressIndicator()],
-          ));
+          return Material(child: Center(child: CircularProgressIndicator()));
         }
       },
     );

@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:retry/retry.dart';
 import 'package:strollplanner_tracker/config.dart';
-import 'package:strollplanner_tracker/services/auth.dart';
 
 typedef DataFactory<D> = D Function(Map<String, dynamic>);
 

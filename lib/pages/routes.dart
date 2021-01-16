@@ -80,7 +80,7 @@ class _RoutesPageState extends State<RoutesPage> {
         body: routes == null
             ? Center(child: CircularProgressIndicator())
             : RefreshIndicator(
-                child: ListView.builder(
+                child: ListView.separated(
                   itemCount: routes.length,
                   itemBuilder: (context, index) {
                     var route = routes[index];
@@ -89,6 +89,7 @@ class _RoutesPageState extends State<RoutesPage> {
                         orgId: this.orgId,
                         route: route);
                   },
+                  separatorBuilder: (context, index) => SizedBox(height: 20),
                 ),
                 onRefresh: fetchRoutes,
               ));
@@ -144,80 +145,91 @@ class RouteItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        child: Stack(children: [
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 5,
+            blurRadius: 7,
+            offset: Offset(0, 3), // changes position of shadow
+          ),
+        ],
+        color: Colors.white,
+      ),
+      child: Stack(children: [
+        Container(
+            child: Column(children: [
           Container(
-              child: Column(children: [
-                Container(
-                    child: Text(route.title,
-                        style: Theme.of(context).textTheme.headline6),
-                    padding: EdgeInsets.all(10)),
-                Row(
-                  children: [
-                    Image.network(
-                      "${AppConfig.of(context).apiBaseUrl}/orgs/$orgId/routes/${route.id}/static/simplified/300/300",
-                      width: 150,
-                    ),
-                    Container(
-                        child: Column(
-                          children: [
-                            Text(formatDistance(route.totalLength)),
-                            route.published
-                                ? route.canceled
-                                    ? Chip(
-                                        label: Text(
-                                          "Canceled",
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyText1
-                                              .copyWith(color: Colors.white),
-                                        ),
-                                        backgroundColor: Colors.red,
-                                      )
-                                    : Chip(
-                                        label: Text(
-                                          "Published",
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyText1
-                                              .copyWith(color: Colors.white),
-                                        ),
-                                        backgroundColor: Colors.green,
-                                      )
-                                : Chip(
-                                    label: Text(
-                                      "Not Published",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyText1
-                                          .copyWith(color: Colors.white),
-                                    ),
-                                    backgroundColor: Colors.grey[500],
-                                  ),
-                          ],
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        ),
-                        padding: EdgeInsets.all(10))
-                  ],
-                )
-              ], crossAxisAlignment: CrossAxisAlignment.stretch),
-              color: Colors.white),
-          Positioned.fill(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TrackPage(this.orgId, route.id),
-                    ),
-                  );
-                },
+              child: Text(route.title,
+                  style: Theme.of(context).textTheme.headline6),
+              padding: EdgeInsets.all(10)),
+          Row(
+            children: [
+              Image.network(
+                "${AppConfig.of(context).apiBaseUrl}/orgs/$orgId/routes/${route.id}/static/simplified/300/300",
+                width: 150,
               ),
-            ),
+              Container(
+                  child: Column(
+                    children: [
+                      Text(formatDistance(route.totalLength)),
+                      route.published
+                          ? route.canceled
+                              ? Chip(
+                                  label: Text(
+                                    "Canceled",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText1
+                                        .copyWith(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.red,
+                                )
+                              : Chip(
+                                  label: Text(
+                                    "Published",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText1
+                                        .copyWith(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.green,
+                                )
+                          : Chip(
+                              label: Text(
+                                "Not Published",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyText1
+                                    .copyWith(color: Colors.white),
+                              ),
+                              backgroundColor: Colors.grey[500],
+                            ),
+                    ],
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  ),
+                  padding: EdgeInsets.all(10))
+            ],
           )
-        ]),
-        margin: EdgeInsets.only(bottom: 20));
+        ], crossAxisAlignment: CrossAxisAlignment.stretch)),
+        Positioned.fill(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TrackPage(this.orgId, route.id),
+                  ),
+                );
+              },
+            ),
+          ),
+        )
+      ]),
+    );
   }
 }
