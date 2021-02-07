@@ -25,13 +25,49 @@ class _OrganizationsPageState extends State<OrganizationsPage> {
     return SafeArea(
         child: Column(
       children: [
-        Container(
-          width: MediaQuery.of(context).size.width * 0.70,
-          child: Image.asset(
-            "assets/logo.png",
-            fit: BoxFit.cover,
-          ),
-          padding: EdgeInsets.all(30),
+        Row(
+          children: [
+            Flexible(flex: 15, child: Container()),
+            Flexible(
+                flex: 70,
+                child: Container(
+                  child: Image.asset(
+                    "assets/logo.png",
+                    fit: BoxFit.cover,
+                  ),
+                  padding: EdgeInsets.all(30),
+                )),
+            Flexible(
+                flex: 15,
+                child: IconButton(
+                  icon: Icon(Icons.logout),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        // return object of type Dialog
+                        return AlertDialog(
+                          title: new Text("Are you sure you want to logout?"),
+                          actions: <Widget>[
+                            new FlatButton(
+                              child: new Text("Cancel"),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            new FlatButton(
+                              child: new Text("Logout"),
+                              onPressed: () {
+                                AuthService.of(context, listen: false).logout();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                )),
+          ],
         ),
         Expanded(
             child: organizations == null

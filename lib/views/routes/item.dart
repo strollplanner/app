@@ -69,7 +69,7 @@ class RouteItemTile extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           RouteStatus(route: this.route),
-                          SizedBox(width: 10),
+                          SizedBox(width: 5),
                           Text(formatDistance(route.totalLength))
                         ],
                       )
