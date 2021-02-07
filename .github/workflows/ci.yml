@@ -6,6 +6,14 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  java_version: '12.x'
+  flutter_version: '1.22.3'
+  flutter_path: /opt/hostedtoolcache/flutter
+  gradle_path: |
+    ~/.gradle/caches
+    ~/.gradle/wrapper
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,13 +33,37 @@ jobs:
           echo "keyAlias=key" >> android/key.properties
           echo "storeFile=/tmp/keystore" >> android/key.properties
 
+      - name: Cache Java/Gradle
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.gradle_path }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Cache Flutter
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.flutter_path }}
+          key: ${{ runner.os }}-flutter-${{ env.flutter_version }}-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-${{ env.flutter_version }}-
+            ${{ runner.os }}-flutter-
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.FLUTTER_HOME }}/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: ${{ runner.os }}-pub-
+
       - uses: actions/setup-java@v1
         with:
-          java-version: '12.x'
+          java-version: ${{ env.java_version }}
 
       - uses: subosito/flutter-action@v1
         with:
-          flutter-version: '1.22.4'
+          flutter-version: ${{ env.flutter_version }}
 
       - name: pub get
         run: flutter pub get
