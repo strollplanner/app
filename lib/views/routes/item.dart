@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide Route;
 import 'package:strollplanner_tracker/config.dart';
+import 'package:strollplanner_tracker/views/routes/route_status.dart';
 import 'package:strollplanner_tracker/views/track.dart';
 import 'package:strollplanner_tracker/models/route.dart';
 
@@ -15,6 +16,71 @@ String formatDistance(double d) {
   }
 
   return "${d.toStringAsFixed(precision)} m";
+}
+
+class RouteItemTile extends StatelessWidget {
+  final String orgId;
+  final Route route;
+
+  const RouteItemTile({Key key, this.orgId, this.route}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Stack(
+          children: [
+            ShaderMask(
+              blendMode: BlendMode.dstOut,
+              shaderCallback: (Rect bounds) {
+                return LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        stops: [0.4, 1.0],
+                        colors: [Colors.transparent, Colors.white])
+                    .createShader(bounds);
+              },
+              child: Image.network(
+                "${AppConfig.of(context).apiBaseUrl}/orgs/$orgId/routes/${route.id}/static/simplified/300/300",
+                width: 150,
+                height: 150,
+              ),
+            ),
+            Positioned.fill(
+                left: 100,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Text(route.title,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            textDirection: TextDirection.rtl,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 20)),
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          RouteStatus(route: this.route),
+                          SizedBox(width: 10),
+                          Text(formatDistance(route.totalLength))
+                        ],
+                      )
+                    ],
+                  ),
+                ))
+          ],
+        )
+      ],
+    );
+  }
 }
 
 class RouteItem extends StatelessWidget {
@@ -39,63 +105,7 @@ class RouteItem extends StatelessWidget {
         color: Colors.white,
       ),
       child: Stack(children: [
-        Container(
-            child: Column(children: [
-              Container(
-                  child: Text(route.title,
-                      style: Theme.of(context).textTheme.headline6),
-                  padding: EdgeInsets.all(10)),
-              Row(
-                children: [
-                  Image.network(
-                    "${AppConfig.of(context).apiBaseUrl}/orgs/$orgId/routes/${route.id}/static/simplified/300/300",
-                    width: 150,
-                  ),
-                  Container(
-                      child: Column(
-                        children: [
-                          Text(formatDistance(route.totalLength)),
-                          SizedBox(height: 20),
-                          route.published
-                              ? route.canceled
-                              ? Chip(
-                            label: Text(
-                              "Canceled",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText1
-                                  .copyWith(color: Colors.white),
-                            ),
-                            backgroundColor: Colors.red,
-                          )
-                              : Chip(
-                            label: Text(
-                              "Published",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText1
-                                  .copyWith(color: Colors.white),
-                            ),
-                            backgroundColor: Colors.green,
-                          )
-                              : Chip(
-                            label: Text(
-                              "Not Published",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText1
-                                  .copyWith(color: Colors.white),
-                            ),
-                            backgroundColor: Colors.grey[500],
-                          ),
-                        ],
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      ),
-                      padding: EdgeInsets.all(10))
-                ],
-              )
-            ], crossAxisAlignment: CrossAxisAlignment.stretch)),
+        RouteItemTile(orgId: orgId, route: route),
         Positioned.fill(
           child: Material(
             color: Colors.transparent,

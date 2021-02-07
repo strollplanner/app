@@ -58,13 +58,12 @@ class RootPage extends StatelessWidget {
     return MaterialApp(
       title: 'StrollPlanner',
       theme: ThemeData(
-        primarySwatch: createMaterialColor(Color(0xFF005DCC)),
-        // This makes the visual density adapt to the platform that you run
-        // the app on. For desktop platforms, the controls will be smaller and
-        // closer together (more dense) than on mobile platforms.
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        backgroundColor: Color(0xf4f4f4ff)
-      ),
+          primarySwatch: createMaterialColor(Color(0xFF005DCC)),
+          // This makes the visual density adapt to the platform that you run
+          // the app on. For desktop platforms, the controls will be smaller and
+          // closer together (more dense) than on mobile platforms.
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+          backgroundColor: Colors.white),
       home: Material(
           child: UpdatePage.build(
               AuthWidget(TrackSessionRedirector(OrganizationsPage())))),
