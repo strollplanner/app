@@ -59,6 +59,7 @@ class _OrganizationsPageState extends State<OrganizationsPage> {
                               child: new Text("Logout"),
                               onPressed: () {
                                 AuthService.of(context, listen: false).logout();
+                                Navigator.of(context).pop();
                               },
                             ),
                           ],
